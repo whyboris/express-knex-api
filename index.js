@@ -4,6 +4,8 @@ const express = require('express')
 const app = express()
 const port = 3000
 
+const hash = require('object-hash');
+
 var knex = require('knex')({
   client: 'mysql',
   connection: {
@@ -52,7 +54,7 @@ app.get('/businesses', function (req, res) {
 /**
  * Update or create a new resource
  * @route {PUT} /businesses
- * @parm {string} [uuid] - if present, will update resource with the particular uuid
+ * @param {string} [uuid] - if present, will update resource with the particular uuid
  */
 app.put('/businesses', express.json({type: '*/*'}), function (req, res) {
   const query = knex.select().from('businesses');
@@ -60,45 +62,73 @@ app.put('/businesses', express.json({type: '*/*'}), function (req, res) {
   if (req.body.uuid) {
     query.where({ uuid: req.body.uuid })
 
-    const newEntry = {
-      uuid: req.body.uuid
-    }
+    const newData = getCleanObjectForDB(req.body);
 
-    if (req.body.name) {
-      newEntry.name = req.body.name
-    }
-    if (req.body.address) {
-      newEntry.address = req.body.address
-    }
-    if (req.body.address2) {
-      newEntry.address2 = req.body.address2
-    }
-    if (req.body.city) {
-      newEntry.city = req.body.city
-    }
-    if (req.body.zip) {
-      newEntry.zip = req.body.zip
-    }
-    if (req.body.country) {
-      newEntry.country = req.body.country
-    }
-    if (req.body.phone) {
-      newEntry.phone = req.body.phone
-    }
-    if (req.body.website) {
-      newEntry.website = req.body.website
-    }
-
-    query.update(newEntry).then((result) => {
+    query.update(newData).then((result) => {
       if (result === 1) {
         res.send({ status: 'success', message: 'Business successfully updated' });
       } else if (result === 0) {
+        res.status(404);
         res.send({ status: 'error', message: 'No business with such uuid found' });
       } else {
+        res.status(400);
         res.send({ status: 'error', message: 'An unknown error occurred' });
       }
     });
+  } else {
+    const newEntry = getCleanObjectForDB(req.body);
+    const uuid = hash(req.body);
+    newEntry.uuid = uuid;
+
+    query.insert(newEntry).then((result) => {
+      res.send({ status: 'success', message: 'New entry created', uuid: uuid });
+    }).catch((err) => {
+      if (err.code === 'ER_DUP_ENTRY') {
+        res.status(409)
+        res.send({ status: 'error', message: 'This entry is a duplicate' });
+      } else {
+        res.status(400);
+        res.send({ status: 'error', message: 'An unknown error occurred' });
+      }
+    })
   }
 })
+
+/**
+ * Return clean object for inserting into database
+ * @param {object} query - any object
+ * @returns {object} containyng at most these properties: name, address, address2, city, zip, coutry, phone, website
+ */
+function getCleanObjectForDB(query) {
+  const newEntry = {};
+
+  if (query.name) {
+    newEntry.name = query.name
+  }
+  if (query.address) {
+    newEntry.address = query.address
+  }
+  if (query.address2) {
+    newEntry.address2 = query.address2
+  }
+  if (query.city) {
+    newEntry.city = query.city
+  }
+  if (query.zip) {
+    newEntry.zip = query.zip
+  }
+  if (query.country) {
+    newEntry.country = query.country
+  }
+  if (query.phone) {
+    newEntry.phone = query.phone
+  }
+  if (query.website) {
+    newEntry.website = query.website
+  }
+
+  return (query);
+}
+
 
 app.listen(port, () => console.log(`Businesses API listening on port ${port}!`))
