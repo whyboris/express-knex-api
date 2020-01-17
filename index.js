@@ -19,30 +19,30 @@ var knex = require('knex')({
 /**
  * Route to search for businesses
  * @route {GET} /businesses
+ * @param {string} [uuid]    - uuid,                exact match
  * @param {string} [name]    - name of business,    substring search
  * @param {string} [address] - address of business, substring search
  * @param {string} [city]    - city of business,    exact match
  * @param {string} [state]   - city of business,    exact match
  */
 app.get('/businesses', function (req, res) {
-  console.log(req.query);
-
   const query = knex.select().from('businesses');
 
-  if (req.query.name) {
-    query.where('name','like','%' + req.query.name + '%');
-  }
-
-  if (req.query.address) {
-    query.where('address','like','%' + req.query.address + '%');
-  }
-
-  if (req.query.city) {
-    query.where('city', req.query.address);
-  }
-
-  if (req.query.state) {
-    query.where('state', req.query.state);
+  if (req.query.uuid) {
+    query.where('uuid', req.query.uuid);
+  } else {
+    if (req.query.name) {
+      query.where('name','like','%' + req.query.name + '%');
+    }
+    if (req.query.address) {
+      query.where('address','like','%' + req.query.address + '%');
+    }
+    if (req.query.city) {
+      query.where('city', req.query.address);
+    }
+    if (req.query.state) {
+      query.where('state', req.query.state);
+    }
   }
 
   query.then((result) => {
