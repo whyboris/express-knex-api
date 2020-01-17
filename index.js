@@ -53,10 +53,18 @@ app.get('/businesses', function (req, res) {
 
 /**
  * Update or create a new resource
+ *
+ * (1) if uuid present:
+ *       - if uuid matches an existing resource: updates that resource
+ *       - if uuid NOT found, returns 'not found' error
+ * (2) if uuid NOT present:
+ *       - Creates a resource and returns its newly-generated uuid.
+ *       - Subsequent identical calls will return a 'duplicate' error
+ *
  * @route {PUT} /businesses
  * @param {string} [uuid] - if present, will update resource with the particular uuid
  */
-app.put('/businesses', express.json({type: '*/*'}), function (req, res) {
+app.put('/businesses', express.json({ type: '*/*' }), function (req, res) {
   const query = knex.select().from('businesses');
 
   if (req.body.uuid) {
@@ -79,6 +87,8 @@ app.put('/businesses', express.json({type: '*/*'}), function (req, res) {
     const newEntry = getCleanObjectForDB(req.body);
     const uuid = hash(req.body);
     newEntry.uuid = uuid;
+    // TODO - include created_at date and format correctly
+    // newEntry.created_at = (new Date()).toString();
 
     query.insert(newEntry).then((result) => {
       res.send({ status: 'success', message: 'New entry created', uuid: uuid });
@@ -113,6 +123,9 @@ function getCleanObjectForDB(query) {
   }
   if (query.city) {
     newEntry.city = query.city
+  }
+  if (query.state) {
+    newEntry.state = query.state
   }
   if (query.zip) {
     newEntry.zip = query.zip
