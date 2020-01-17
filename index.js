@@ -49,9 +49,56 @@ app.get('/businesses', function (req, res) {
 
 })
 
-app.put('/businesses', function (req, res) {
-  console.log(req);
-  res.send('put stuff');
+/**
+ * Update or create a new resource
+ * @route {PUT} /businesses
+ * @parm {string} [uuid] - if present, will update resource with the particular uuid
+ */
+app.put('/businesses', express.json({type: '*/*'}), function (req, res) {
+  const query = knex.select().from('businesses');
+
+  if (req.body.uuid) {
+    query.where({ uuid: req.body.uuid })
+
+    const newEntry = {
+      uuid: req.body.uuid
+    }
+
+    if (req.body.name) {
+      newEntry.name = req.body.name
+    }
+    if (req.body.address) {
+      newEntry.address = req.body.address
+    }
+    if (req.body.address2) {
+      newEntry.address2 = req.body.address2
+    }
+    if (req.body.city) {
+      newEntry.city = req.body.city
+    }
+    if (req.body.zip) {
+      newEntry.zip = req.body.zip
+    }
+    if (req.body.country) {
+      newEntry.country = req.body.country
+    }
+    if (req.body.phone) {
+      newEntry.phone = req.body.phone
+    }
+    if (req.body.website) {
+      newEntry.website = req.body.website
+    }
+
+    query.update(newEntry).then((result) => {
+      if (result === 1) {
+        res.send({ status: 'success', message: 'Business successfully updated' });
+      } else if (result === 0) {
+        res.send({ status: 'error', message: 'No business with such uuid found' });
+      } else {
+        res.send({ status: 'error', message: 'An unknown error occurred' });
+      }
+    });
+  }
 })
 
 app.listen(port, () => console.log(`Businesses API listening on port ${port}!`))
