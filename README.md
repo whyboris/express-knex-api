@@ -27,7 +27,7 @@ All searches and matches are case insensitive (e.g. "NJ" is the same as "nj").
 ### Development
 
 - update `.env` file with your _MySQL_ credentials, database, and table name
-- `npm run dev`
+- `npm run dev` will start [nodemon](https://github.com/remy/nodemon) which will reload the server when `index.js` is updated
 
 ### Notes
 
@@ -37,6 +37,7 @@ All searches and matches are case insensitive (e.g. "NJ" is the same as "nj").
 - We are using [object-hash](https://github.com/puleos/object-hash) to generate a unique hash for `/PUT` requests that do not have a `uuid` value.
    - This will make sure that subsequent calls with the exact same values will generate the same hash and prevent duplicate entries
    - Unfortunately, even though the column is named "uuid" it will contain hashes that do not match the [uuid format](https://en.wikipedia.org/wiki/Universally_unique_identifier#Format).
+- We are using [pm2](https://github.com/Unitech/pm2) to run the server (`npm start`) and to automatically restart it if it ever fails
 
 ### Todo
 
@@ -47,3 +48,5 @@ All searches and matches are case insensitive (e.g. "NJ" is the same as "nj").
 - Migrate code to _TypeScript_ to catch more errors and have a better coding experience
 - Rename `.env` file to `.env-example` with dummy values and add ".env" to `.gitignore`
 - Add any appropriate tests (e.g. unit, integration, e2e, load)
+- Move the `getCleanObjectForDB` method to another file for a cleaner `index.js` file
+- `getCleanObjectForDB` can be refactored (loop through an array rather than go through a chain of `if` statements)
