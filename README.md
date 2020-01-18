@@ -37,7 +37,7 @@ All searches and matches are case insensitive (e.g. "NJ" is the same as "nj").
 - We are using [object-hash](https://github.com/puleos/object-hash) to generate a unique hash for `/PUT` requests that do not have a `uuid` value.
    - This will make sure that subsequent calls with the exact same values will generate the same hash and prevent duplicate entries
    - Unfortunately, even though the column is named "uuid" it will contain hashes that do not match the [uuid format](https://en.wikipedia.org/wiki/Universally_unique_identifier#Format).
-- We are using [pm2](https://github.com/Unitech/pm2) to run the server (`npm start`) and to automatically restart it if it ever fails
+- We are using [pm2](https://github.com/Unitech/pm2) to run the server (`npm start`) and to automatically restart it if it ever fails. Run `npm run stop` to stop it.
 
 ### Todo
 
