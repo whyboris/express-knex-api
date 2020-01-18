@@ -49,5 +49,3 @@ All searches and matches are case insensitive (e.g. "NJ" is the same as "nj").
 - Rename `.env` file to `.env-example` with dummy values and add ".env" to `.gitignore`
 - Add any appropriate tests (e.g. unit, integration, e2e, load)
 - Move the `getCleanObjectForDB` method to another file for a cleaner `index.js` file
-- Return a nice error when `PUT` does not contain a valid JSON
-

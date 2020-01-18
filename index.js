@@ -64,7 +64,7 @@ app.get('/businesses', function (req, res) {
  * @route {PUT} /businesses
  * @param {string} [uuid] - if present, will update resource with the particular uuid
  */
-app.put('/businesses', express.json({ type: '*/*' }), function (req, res) {
+app.put('/businesses', express.json({ type: 'application/json' }), function (req, res) {
   const query = knex.select().from('businesses');
 
   if (req.body.uuid) {
@@ -74,13 +74,13 @@ app.put('/businesses', express.json({ type: '*/*' }), function (req, res) {
 
     query.update(newData).then((result) => {
       if (result === 1) {
-        res.send({ status: 'success', message: 'Business successfully updated' });
+        res.json({ status: 'success', message: 'Business successfully updated' });
       } else if (result === 0) {
         res.status(404);
-        res.send({ status: 'error', message: 'No business with such uuid found' });
+        res.json({ status: 'error', message: 'No business with such uuid found' });
       } else {
         res.status(400);
-        res.send({ status: 'error', message: 'An unknown error occurred' });
+        res.json({ status: 'error', message: 'An unknown error occurred' });
       }
     });
   } else {
@@ -91,23 +91,29 @@ app.put('/businesses', express.json({ type: '*/*' }), function (req, res) {
     // newEntry.created_at = (new Date()).toString();
 
     query.insert(newEntry).then((result) => {
-      res.send({ status: 'success', message: 'New entry created', uuid: uuid });
+      res.json({ status: 'success', message: 'New entry created', uuid: uuid });
     }).catch((err) => {
       if (err.code === 'ER_DUP_ENTRY') {
         res.status(409)
-        res.send({ status: 'error', message: 'This entry is a duplicate' });
+        res.json({ status: 'error', message: 'This entry is a duplicate' });
       } else {
         res.status(400);
-        res.send({ status: 'error', message: 'An unknown error occurred' });
+        res.json({ status: 'error', message: 'An unknown error occurred' });
       }
     })
   }
 })
 
+app.use(function(error, req, res, next) {
+  // Handle JSON parse errors
+  res.status(400);
+  res.json({ status: 'error', message: error.message });
+});
+
 /**
  * Return clean object for inserting into database
  * @param {object} query - any object
- * @returns {object} containyng at most these properties: name, address, address2, city, zip, coutry, phone, website
+ * @returns {object} containyng at most these properties: name, address, address2, city, state, zip, coutry, phone, website
  */
 function getCleanObjectForDB(query) {
   const newEntry = {};
