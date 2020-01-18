@@ -12,7 +12,7 @@ var knex = require('knex')({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASS,
-    database: "homework"
+    database: process.env.DB_DATABASE,
   }
 });
 
@@ -26,7 +26,7 @@ var knex = require('knex')({
  * @param {string} [state]   - city of business,    exact match
  */
 app.get('/businesses', function (req, res) {
-  const query = knex.select().from('businesses');
+  const query = knex.select().from(process.env.DB_TABLE);
 
   if (req.query.uuid) {
     query.where('uuid', req.query.uuid);
