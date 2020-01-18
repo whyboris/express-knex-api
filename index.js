@@ -112,35 +112,25 @@ app.put('/businesses', express.json({ type: '*/*' }), function (req, res) {
 function getCleanObjectForDB(query) {
   const newEntry = {};
 
-  if (query.name) {
-    newEntry.name = query.name
-  }
-  if (query.address) {
-    newEntry.address = query.address
-  }
-  if (query.address2) {
-    newEntry.address2 = query.address2
-  }
-  if (query.city) {
-    newEntry.city = query.city
-  }
-  if (query.state) {
-    newEntry.state = query.state
-  }
-  if (query.zip) {
-    newEntry.zip = query.zip
-  }
-  if (query.country) {
-    newEntry.country = query.country
-  }
-  if (query.phone) {
-    newEntry.phone = query.phone
-  }
-  if (query.website) {
-    newEntry.website = query.website
-  }
+  const validProperty = [
+    'name',
+    'address',
+    'address2',
+    'city',
+    'state',
+    'zip',
+    'country',
+    'phone',
+    'website',
+  ];
 
-  return (query);
+  validProperty.forEach((property) => {
+    if (query[property]) {
+      newEntry[property] = query[property];
+    }
+  });
+
+  return (newEntry);
 }
 
 
