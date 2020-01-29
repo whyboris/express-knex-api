@@ -25,17 +25,43 @@ var knex = require('knex')({
  * @param {string} [city]    - city of business,    exact match
  * @param {string} [state]   - city of business,    exact match
  */
-app.get('/businesses', function (req, res) {
+app.get('/businesses', function(req, res) {
+
+  const user = req.get('user');
+  const pass = req.get('pass');
+
+  if (!user || !pass) {
+    res.status(401);
+    res.json({ status: 'error', message: 'headers missing' });
+  } else {
+    validate(user, pass).then((result) => {
+      if (result) { // user type or `null`
+        searchForBusiness(req, res);
+      } else {
+        res.status(401);
+        res.json({ status: 'error', message: 'not authorized' });
+      }
+    });
+  }
+})
+
+/**
+ * Perform the search against business database
+ * @param {*} req
+ * @param {*} res
+ */
+function searchForBusiness(req, res) {
+
   const query = knex.select().from(process.env.DB_TABLE);
 
   if (req.query.uuid) {
     query.where('uuid', req.query.uuid);
   } else {
     if (req.query.name) {
-      query.where('name','like','%' + req.query.name + '%');
+      query.where('name', 'like', '%' + req.query.name + '%');
     }
     if (req.query.address) {
-      query.where('address','like','%' + req.query.address + '%');
+      query.where('address', 'like', '%' + req.query.address + '%');
     }
     if (req.query.city) {
       query.where('city', req.query.address);
@@ -48,8 +74,29 @@ app.get('/businesses', function (req, res) {
   query.then((result) => {
     res.send(result)
   });
+}
 
-})
+/**
+ * Get user type from database; return `null` if not found
+ * @param {string} name
+ * @param {string} pass
+ */
+function validate(name, pass) {
+  return new Promise((resolve, reject) => {
+    const query = knex.select().from('users');
+
+    query.where('user', name);
+    query.where('pass', pass);
+
+    query.then((result) => {
+      if (result.length) {
+        resolve(result[0].type); // admin or user
+      } else {
+        resolve(null);
+      }
+    });
+  });
+}
 
 /**
  * Update or create a new resource
@@ -65,9 +112,36 @@ app.get('/businesses', function (req, res) {
  * @param {string} [uuid] - if present, will update resource with the particular uuid
  */
 app.put('/businesses', express.json({ type: 'application/json' }), function (req, res) {
-  const query = knex.select().from('businesses');
+
+  const user = req.get('user');
+  const pass = req.get('pass');
+
+  if (!user || !pass) {
+    res.status(401);
+    res.json({ status: 'error', message: 'headers missing' });
+  } else {
+    validate(user, pass).then((result) => {
+      if (result === 'admin') {
+        insertOrUpdateBusiness(res, req);
+      } else {
+        res.status(401);
+        res.json({ status: 'error', message: 'not authorized' });
+      }
+    });
+  }
+})
+
+/**
+ * Insert new business or update existing one
+ * @param {*} res
+ * @param {*} req
+ */
+function insertOrUpdateBusiness(res, req) {
 
   if (req.body.uuid) {
+
+    const query = knex.select().from('businesses');
+
     query.where({ uuid: req.body.uuid })
 
     const newData = getCleanObjectForDB(req.body);
@@ -102,7 +176,7 @@ app.put('/businesses', express.json({ type: 'application/json' }), function (req
       }
     })
   }
-})
+}
 
 app.use(function(error, req, res, next) {
   // Handle JSON parse errors
