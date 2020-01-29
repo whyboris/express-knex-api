@@ -86,7 +86,7 @@ function validate(name, pass) {
     const query = knex.select().from('users');
 
     query.where('user', name);
-    query.where('pass', pass);
+    query.where('pass', saltMyPassword(pass));
 
     query.then((result) => {
       if (result.length) {
@@ -211,6 +211,20 @@ function getCleanObjectForDB(query) {
   });
 
   return (newEntry);
+}
+
+
+/**
+ * Salt and has the password
+ */
+function saltMyPassword(plainText) {
+
+  const saltedAndHashed = hash({
+    pass: plainText,
+    salt: 'alsdkfj lasdkjfla sdjflasjdflkasdjfl ajsdlfkja sdlfjasdlfkj'
+  });
+
+  return saltedAndHashed
 }
 
 
