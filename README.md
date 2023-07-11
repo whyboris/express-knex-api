@@ -31,7 +31,7 @@ All searches and matches are case insensitive (e.g. "NJ" is the same as "nj").
 
 ### Notes
 
-- `.evn` file should not be committed to a repository, it is included here for demonstration only
+- `.env` file should not be committed to a repository, it is included here for demonstration only
 - We are using [knex](https://github.com/knex/knex) query builder to avoid SQL injections
 - The `uuid` column (_varchar(40)_) in the table is _primary_ so it will not allow duplicate entries
 - We are using [object-hash](https://github.com/puleos/object-hash) to generate a unique hash for `/PUT` requests that do not have a `uuid` value.
